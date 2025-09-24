@@ -15,6 +15,11 @@ mongoose
   app.use(express.json());
   app.use("/", mainRouter);
 
+
+  const routes = require('./routes')
+  app.use(routes)
+  app.use(express.json())
+
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });

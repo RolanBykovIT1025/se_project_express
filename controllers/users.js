@@ -1,6 +1,6 @@
 const User = require("../models/user");
 
-// GET /uers
+// GET /users
 
 const getUsers = (req, res) => {
   User.find({})
