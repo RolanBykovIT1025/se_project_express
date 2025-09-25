@@ -17,8 +17,9 @@ mongoose
 
 
   const routes = require('./routes')
-  app.use(routes)
   app.use(express.json())
+  app.use(routes)
+
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
