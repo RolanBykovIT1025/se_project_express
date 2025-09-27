@@ -1,4 +1,3 @@
-const clothingitem = require("../models/clothingitem");
 const ClothingItem = require("../models/clothingItem");
 
 const createItem = (req, res) => {
@@ -7,7 +6,7 @@ const createItem = (req, res) => {
 
   const { name, weather, imageURL } = req.body;
 
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageURL, owner: req.user._id })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
@@ -30,7 +29,7 @@ const updateItem = (req, res) => {
   const { itemId } = req.params;
   const { imageURL } = req.body;
 
-  ClothingItem.findbyIdAndUpdate(itemId, { $set: { imageURL } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageURL } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((e) => {
