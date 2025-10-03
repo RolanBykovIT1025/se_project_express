@@ -8,12 +8,12 @@ const { createItem, getItems, updateItem, deleteItem } = require('../controllers
 router.post('/', createItem)
 
 //Read
-router.get('/', createItem);
+router.get('/', getItems);
 
 //Update
 router.put('/items/:itemId', updateItem)
 
 //Delete
-router.delete('/:itemid', deleteItem)
+router.delete('/:itemId', deleteItem)
 
 module.exports = router;
