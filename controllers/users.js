@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { BAD_REQUEST, SERVER_ERROR, NOT_FOUND } = require("../utils/errors");
 
 // GET /users
 
@@ -19,9 +20,9 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res.status(400).send({ message: err.message });
+        return res.status(BAD_REQUEST).send({ message: err.message });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(SERVER_ERROR).send({ message: err.message });
     });
 };
 
@@ -33,11 +34,11 @@ const getUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(NOT_FOUND).send({ message: "User not found" });
       } else if (err.name === "CastError") {
-        return res.status(400).send({ message: "Invalid user ID format" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid user ID format" });
       }
-      return res.status(500).send({ message: err.message });
+      return res.status(SERVER_ERROR).send({ message: err.message });
     });
 };
 

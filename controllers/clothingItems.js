@@ -5,26 +5,22 @@ const createItem = (req, res) => {
   console.log(req);
   console.log(req.body);
 
-  const { name, weather, imageURL } = req.body;
+  const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageURL, owner: req.user._id })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
     })
     .catch((e) => {
-      res.status(SERVER_ERROR).send({ message: "Error from createItem" });
+      res.status(BAD_REQUEST).send({ message: "Invalid data" });
     });
 };
 
 const getItems = (req, res) => {
-  ClothingItem
-    .find({})
+  ClothingItem.find({})
     .then((items) => res.status(200).send(items))
     .catch((e) => {
-      if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      }
       res.status(SERVER_ERROR).send({ message: "Error from getItems" });
     });
 };
@@ -42,26 +38,42 @@ const updateItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+  const itemId = req.params;
 
   console.log(itemId);
   ClothingItem.findByIdAndDelete(itemId)
-  .orFail()
-  .then((item) => res.status(204).send({}))
-  .catch((e) => {
-    if (err.name === "DocumentNotFoundError") {
-      res.status(NOT_FOUND).send({ message: "Document not found." });
-    } else if (err.name === "CastError") {
-      res.status(BAD_REQUEST).send({ message: "Unable to find request"});
-    } else {
-      res.status(SERVER_ERROR).send({ message: "Something went wrong." });
-    }
-  });
+    .orFail()
+    .then((item) => res.status(200).send({}))
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res.status(NOT_FOUND).send({ message: "Document not found." });
+      } else if (err.name === "CastError") {
+        res.status(BAD_REQUEST).send({ message: "Unable to find request" });
+      } else {
+        res.status(SERVER_ERROR).send({ message: "Something went wrong." });
+      }
+    });
 };
+
+const likeItem = (req, res) => ClothingItem.findByIdAndUpdate(
+  req.params.itemId,
+  { $addToSet: { likes: req.user._id } }, // add _id to the array if it's not there yet
+  { new: true },
+)
+
+
+const dislikeItem = (req, res) => ClothingItem.findByIdAndUpdate(
+  req.params.itemId,
+  { $pull: { likes: req.user._id } }, // remove _id from the array
+  { new: true },
+)
+
 
 module.exports = {
   createItem,
   getItems,
   updateItem,
   deleteItem,
+  likeItem,
+  dislikeItem,
 };
