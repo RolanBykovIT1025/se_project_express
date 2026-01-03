@@ -8,7 +8,7 @@ const getUsers = (req, res) => {
     .then((users) => res.status(200).send(users))
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res.status(SERVER_ERROR).send({ message: err.message });
     });
 };
 
