@@ -49,7 +49,7 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({}))
     .catch((err) => {
-      if (err.name === "documentNotFoundError") {
+      if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND).send({ message: "Document not found." });
       } else if (err.name === "CastError") {
         res.status(BAD_REQUEST).send({ message: "Unable to find request" });
@@ -68,7 +68,7 @@ const likeItem = (req, res) => {
   .orFail()
   .then((item) => res.status(200).send({ data: item }))
   .catch((err) => {
-    if (err.name === "documentNotFoundError") {
+    if (err.name === "DocumentNotFoundError") {
       res.status(NOT_FOUND).send({ message: "item not found" });
     } else if (err.name === "CastError") {
       res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
@@ -88,7 +88,7 @@ const dislikeItem = (req, res) => {
   .orFail()
   .then((item) => res.status(200).send({ data: item }))
   .catch((err) => {
-    if (err.name === "documentNotFoundError") {
+    if (err.name === "DocumentNotFoundError") {
       res.status(NOT_FOUND).send({ message: "Item not found" });
     } else if (err.name === "CastError") {
       res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
