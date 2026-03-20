@@ -78,7 +78,6 @@ const likeItem = (req, res) => {
   });
 };
 
-
 const dislikeItem = (req, res) => {
   ClothingItem.findByIdAndUpdate(
   req.params.itemId,
