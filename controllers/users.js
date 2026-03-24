@@ -1,60 +1,54 @@
-import config from './config.js';
+import config from "./config.js";
 
 const User = require("../models/user");
-const { BAD_REQUEST, SERVER_ERROR, NOT_FOUND } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  SERVER_ERROR,
+  NOT_FOUND,
+  CONFLICT,
+  UNAUTHORIZED,
+} = require("../utils/errors");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-
-// GET /users
-
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(200).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res.status(SERVER_ERROR).send({ message: err.message });
-    });
-};
+const jwt = require("jsonwebtoken");
+const config = require("../utils/config");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  salt = bcrypt.genSalt(saltRounds, (err) => {
-    if (err) {
-      // Handle error
-      return;
-    }
+  bcrypt
+    .hash(password, saltRounds)
+    .then((hash) => {
+      return User.create({
+        name,
+        avatar,
+        email,
+        password: hash,
+      });
+    })
+    .then((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
 
-    // Salt generation successful, proceed to hash the password
-  });
-  bcrypt.hash(password, salt, (err, hash) => {
-    if (err) {
-      // Handle error
-      return;
-    }
-
-    // Hashing successful, 'hash' contains the hashed password
-    console.log("Hashed password:", hash);
-  });
-
-  User.create({ name, avatar, email, hash })
-    .then((user) => res.status(201).send(user))
+      return res.status(201).send(userObj);
+    })
     .catch((err) => {
       console.error(err);
-      if (error.code === 11000) {
+
+      if (err.code === 11000) {
         return res
-          .status(409)
+          .status(CONFLICT)
           .send({ message: "This email is already in use" });
       }
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: err.message });
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
       }
-      return res.status(SERVER_ERROR).send({ message: err.message });
+      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
     });
 };
 
-const getUser = (req, res) => {
-  const { userId } = req.params;
+const getCurrentUser = (req, res) => {
+  const { userId } = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -71,7 +65,7 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports.login = (req, res) => {
+const login = (req, res) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -82,8 +76,30 @@ module.exports.login = (req, res) => {
       return token;
     })
     .catch((err) => {
-      res.status(401).send({ message: err.message });
+      res.status(UNAUTHORIZED).send({ message: err.message });
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+const updateProfile = (req, res) => {
+  User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { name: req.params.name, avatar: req.params.avatar } },
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
+    .orFail()
+    .then((item) => res.status(200).send({ data: item }))
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res.status(NOT_FOUND).send({ message: "item not found" });
+      } else if (err.name === "CastError") {
+        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      } else {
+        res.status(SERVER_ERROR).send({ message: "Server error" });
+      }
+    });
+};
+
+module.exports = { login, createUser, getCurrentUser, updateProfile };

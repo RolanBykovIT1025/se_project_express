@@ -18,11 +18,6 @@ mongoose
   })
   .catch(console.error);
 
-app.use((req, res, next) => {
-  req.user = { _id: "69588de78d7474beda0d8c53" };
-  next();
-});
-
 app.use(express.json());
 app.use("/", mainRouter);
 
@@ -32,3 +27,11 @@ app.listen(PORT, () => {
 
 app.post('/signin', login);
 app.post('/signup', createUser);
+app.get('/items', itemsRouter);
+
+
+app.use(auth);
+
+// Protected routes (authentication required)
+app.use('/users', usersRouter);
+app.use('/items', itemsRouter);
