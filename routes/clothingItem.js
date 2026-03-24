@@ -5,19 +5,13 @@ const { createItem, getItems, updateItem, deleteItem, likeItem, dislikeItem } = 
 
 //CRUD
 
-//Create
-router.post('/', auth, createItem);
-
-//Read
+// Public route - Read items
 router.get('/', getItems);
 
-//Delete
+// Protected routes - require authentication
+router.post('/', auth, createItem);
 router.delete('/:itemId', auth, deleteItem);
-
-//Like
 router.put('/:itemId/likes', auth, likeItem);
-
-//Unlike
 router.delete('/:itemId/likes', auth, dislikeItem);
 
 module.exports = router;

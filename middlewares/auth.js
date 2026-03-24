@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../utils/config');
+const config = require('../utils/config');
 
 const auth = (req, res, next) => {
   // Extract token from Authorization header
@@ -12,10 +12,12 @@ const auth = (req, res, next) => {
   const token = authorization.replace('Bearer ', '');
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, config.JWT_SECRET);
     req.user = payload; // This sets req.user with real data
     next();
   } catch (err) {
     return res.status(401).send({ message: 'Authorization required' });
   }
 };
+
+module.exports = auth;
