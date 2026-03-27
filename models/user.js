@@ -23,6 +23,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "The email field is required."],
     unique: true,
+    select: false, // Exclude password from query results by default
     validate: {
       validator(value) {
         return validator.isEmail(value);
@@ -33,7 +34,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, "The password field is required."],
-    minlength: 8,
   },
 });
 
@@ -41,7 +41,7 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   email,
   password
 ) {
-  return this.findOne({ email }).then((user) => {
+  return this.findOne({ email }).select("+password").then((user) => {
     if (!user) {
       return Promise.reject(new Error("Incorrect email or password"));
     }

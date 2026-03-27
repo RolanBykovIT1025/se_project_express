@@ -3,7 +3,7 @@ const router = require('express').Router();
 const auth = require("../middlewares/auth");
 const { createItem, getItems, updateItem, deleteItem, likeItem, dislikeItem } = require('../controllers/clothingItems')
 
-//CRUD
+// CRUD
 
 // Public route - Read items
 router.get('/', getItems);

@@ -1,3 +1,4 @@
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const {
   BAD_REQUEST,
@@ -6,7 +7,7 @@ const {
   CONFLICT,
   UNAUTHORIZED,
 } = require("../utils/errors");
-const bcrypt = require("bcrypt");
+
 const saltRounds = 10;
 const jwt = require("jsonwebtoken");
 const config = require("../utils/config");
@@ -16,14 +17,12 @@ const createUser = (req, res) => {
 
   bcrypt
     .hash(password, saltRounds)
-    .then((hash) => {
-      return User.create({
+    .then((hash) => User.create({
         name,
         avatar,
         email,
         password: hash,
-      });
-    })
+      }))
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
@@ -46,7 +45,7 @@ const createUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user._id;
+  const userId  = req.user._id;
   User.findById(userId)
     .orFail()
     .then((user) => res.status(200).send(user))
@@ -54,34 +53,42 @@ const getCurrentUser = (req, res) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
-      } else if (err.name === "CastError") {
+      } if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid user ID format" });
       }
-      return res.status(SERVER_ERROR).send({ message: err.message });
+      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
+    if (!email || !password) {
+      return res
+        .status(BAD_REQUEST)
+        .send({ message: "Email and password are required" });
+    }
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, config.JWT_SECRET, {
         expiresIn: "7d",
       });
-      return token;
+      return res.send({ token });
     })
     .catch((err) => {
-      res.status(UNAUTHORIZED).send({ message: err.message });
+      if (err.message === "Incorrect email or password") {
+        return res.status(UNAUTHORIZED).send({ message: "Incorrect email or password" });
+      }
+      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
     });
 };
 
 const updateProfile = (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
-    { $set: { name: req.params.name, avatar: req.params.avatar } },
+    { $set: { name: req.body.name, avatar: req.body.avatar } },
     {
       new: true,
       runValidators: true,
