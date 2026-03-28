@@ -7,6 +7,7 @@ A weather-based clothing recommendation app where users can save clothing items 
 ## Technologies and Techniques Used
 - HTML5
 - CSS3
+- React
 - JavaScript
 - Flexbox
 - CSS Grid
@@ -15,6 +16,7 @@ A weather-based clothing recommendation app where users can save clothing items 
 - Git/Github
 - Auth: JWT
 - Database: MongoDB (Mongoose)
+- Postman
 
 ## Features
 - Create account / login.
@@ -49,7 +51,8 @@ The back-end project is focused on creating a server for the WTWR application. U
 ### Testing
 Before committing your code, make sure you edit the file `sprint.txt` in the root folder. The file `sprint.txt` should contain the number of the sprint you're currently working on. For ex. 12
 
-## DEMO
+## Project Pitch Video
+- https://drive.google.com/file/d/1h25gz6AAuhsz_KxjQxXYX0X0TxFH9sGm/view?usp=drive_link
 
 ## Contact
 - GitHub: [@RolanBykovIT1025] (https://github.com/RolanBykovIT1025)
