@@ -7,8 +7,6 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
 
   const { name, weather, imageUrl } = req.body;
 
@@ -21,9 +19,9 @@ const createItem = (req, res) => {
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-      } 
+      }
         res.status(SERVER_ERROR).send({ message: "server error" });
-      
+
     });
 };
 
@@ -44,12 +42,15 @@ const updateItem = (req, res) => {
     .findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
-    .catch((e) => {
-      res.status(SERVER_ERROR).send({ message: "Error from updateItem", e });
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "Item not found" });
+      } else if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+      }
+      res.status(SERVER_ERROR).send({ message: "An error has occurred on the server" });
     });
 };
-
-const mongoose = require("mongoose");
 
 const deleteItem = (req, res) => {
   const { itemId } = req.params;

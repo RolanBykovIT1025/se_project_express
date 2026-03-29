@@ -17,12 +17,14 @@ const createUser = (req, res) => {
 
   bcrypt
     .hash(password, saltRounds)
-    .then((hash) => User.create({
+    .then((hash) =>
+      User.create({
         name,
         avatar,
         email,
         password: hash,
-      }))
+      })
+    )
     .then((user) => {
       const userObj = user.toObject();
       delete userObj.password;
@@ -38,22 +40,29 @@ const createUser = (req, res) => {
           .send({ message: "This email is already in use" });
       }
       if (err.name === "ValidationError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+        return res
+          .status(BAD_REQUEST)
+          .send({ message: "The request body could not be read properly" });
       }
       return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const userId  = req.user._id;
+  const userId = req.user._id;
   User.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send(user))
+    .then((user) => {
+      const userObj = user.toObject();
+      delete userObj.password;
+      return res.status(200).send(userObj);
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "User not found" });
-      } if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res
           .status(BAD_REQUEST)
           .send({ message: "Invalid user ID format" });
@@ -64,11 +73,11 @@ const getCurrentUser = (req, res) => {
 
 const login = (req, res) => {
   const { email, password } = req.body;
-    if (!email || !password) {
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "Email and password are required" });
-    }
+  if (!email || !password) {
+    return res
+      .status(BAD_REQUEST)
+      .send({ message: "Email and password are required" });
+  }
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
@@ -79,7 +88,9 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res.status(UNAUTHORIZED).send({ message: "Incorrect email or password" });
+        return res
+          .status(UNAUTHORIZED)
+          .send({ message: "Incorrect email or password" });
       }
       return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
     });
@@ -97,10 +108,15 @@ const updateProfile = (req, res) => {
     .orFail()
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
-        res.status(NOT_FOUND).send({ message: "item not found" });
+      if (err.name === "ValidationError") {
+        res.status(BAD_REQUEST).send({
+          message: `${Object.values(err.errors)
+            .map((error) => error.mesaage)
+            .join(", ")}`,
+        });
+        res.status(NOT_FOUND).send({ message: "user not found" });
       } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+        res.status(BAD_REQUEST).send({ message: "Invalid user ID" });
       } else {
         res.status(SERVER_ERROR).send({ message: "Server error" });
       }
