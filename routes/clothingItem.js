@@ -10,8 +10,9 @@ router.get('/', getItems);
 
 // Protected routes - require authentication
 router.post('/', auth, createItem);
-router.delete('/:itemId', auth, deleteItem);
+router.patch('/:itemId', auth, updateItem);
 router.put('/:itemId/likes', auth, likeItem);
+router.delete('/:itemId', auth, deleteItem);
 router.delete('/:itemId/likes', auth, dislikeItem);
 
 module.exports = router;

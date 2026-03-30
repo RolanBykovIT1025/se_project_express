@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const clothingitem = require("../models/clothingItem");
 const {
   BAD_REQUEST,
@@ -7,21 +8,20 @@ const {
 } = require("../utils/errors");
 
 const createItem = (req, res) => {
-
   const { name, weather, imageUrl } = req.body;
 
   clothingitem
     .create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      console.log(item);
       res.send({ data: item });
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
         return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
-        res.status(SERVER_ERROR).send({ message: "server error" });
-
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -29,8 +29,10 @@ const getItems = (req, res) => {
   clothingitem
     .find({})
     .then((items) => res.status(200).send(items))
-    .catch((e) => {
-      res.status(SERVER_ERROR).send({ message: "Error from getItems" });
+    .catch(() => {
+      res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -45,10 +47,13 @@ const updateItem = (req, res) => {
     .catch((err) => {
       if (err.name === "DocumentNotFoundError") {
         return res.status(NOT_FOUND).send({ message: "Item not found" });
-      } else if (err.name === "CastError") {
-        return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
       }
-      res.status(SERVER_ERROR).send({ message: "An error has occurred on the server" });
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -56,10 +61,10 @@ const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(itemId)) {
-    return res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+    return res.status(BAD_REQUEST).send({ message: "Invalid data" });
   }
 
-  clothingitem
+  return clothingitem
     .findById(itemId)
     .orFail(() => {
       const err = new Error("Item not found");
@@ -82,7 +87,7 @@ const deleteItem = (req, res) => {
       }
       return res
         .status(SERVER_ERROR)
-        .send({ message: "Something went wrong." });
+        .send({ message: "An error has occurred on the server." });
     });
 };
 
@@ -99,9 +104,11 @@ const likeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND).send({ message: "item not found" });
       } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+        res.status(BAD_REQUEST).send({ message: "Invalid data" });
       } else {
-        res.status(SERVER_ERROR).send({ message: "Server error" });
+        res
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
     });
 };
@@ -119,9 +126,11 @@ const dislikeItem = (req, res) => {
       if (err.name === "DocumentNotFoundError") {
         res.status(NOT_FOUND).send({ message: "Item not found" });
       } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid item ID" });
+        res.status(BAD_REQUEST).send({ message: "Invalid data" });
       } else {
-        res.status(SERVER_ERROR).send({ message: "Server error" });
+        res
+          .status(SERVER_ERROR)
+          .send({ message: "An error has occurred on the server" });
       }
     });
 };

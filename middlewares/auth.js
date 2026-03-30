@@ -15,7 +15,7 @@ const auth = (req, res, next) => {
   try {
     const payload = jwt.verify(token, config.JWT_SECRET);
     req.user = payload; // This sets req.user with real data
-    next();
+    return next();
   } catch (err) {
     return res.status(UNAUTHORIZED).send({ message: 'Authorization required' });
   }

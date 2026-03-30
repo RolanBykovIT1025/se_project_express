@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const {
   BAD_REQUEST,
@@ -9,7 +10,6 @@ const {
 } = require("../utils/errors");
 
 const saltRounds = 10;
-const jwt = require("jsonwebtoken");
 const config = require("../utils/config");
 
 const createUser = (req, res) => {
@@ -40,11 +40,11 @@ const createUser = (req, res) => {
           .send({ message: "This email is already in use" });
       }
       if (err.name === "ValidationError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "The request body could not be read properly" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
-      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -63,20 +63,18 @@ const getCurrentUser = (req, res) => {
         return res.status(NOT_FOUND).send({ message: "User not found" });
       }
       if (err.name === "CastError") {
-        return res
-          .status(BAD_REQUEST)
-          .send({ message: "Invalid user ID format" });
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
       }
-      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
 const login = (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res
-      .status(BAD_REQUEST)
-      .send({ message: "Email and password are required" });
+    return res.status(BAD_REQUEST).send({ message: "Invalid data" });
   }
 
   return User.findUserByCredentials(email, password)
@@ -92,7 +90,9 @@ const login = (req, res) => {
           .status(UNAUTHORIZED)
           .send({ message: "Incorrect email or password" });
       }
-      return res.status(SERVER_ERROR).send({ message: "Something went wrong" });
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
@@ -109,17 +109,21 @@ const updateProfile = (req, res) => {
     .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        res.status(BAD_REQUEST).send({
+        return res.status(BAD_REQUEST).send({
           message: `${Object.values(err.errors)
-            .map((error) => error.mesaage)
+            .map((error) => error.message)
             .join(", ")}`,
         });
-        res.status(NOT_FOUND).send({ message: "user not found" });
-      } else if (err.name === "CastError") {
-        res.status(BAD_REQUEST).send({ message: "Invalid user ID" });
-      } else {
-        res.status(SERVER_ERROR).send({ message: "Server error" });
       }
+      if (err.name === "DocumentNotFoundError") {
+        return res.status(NOT_FOUND).send({ message: "user not found" });
+      }
+      if (err.name === "CastError") {
+        return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      }
+      return res
+        .status(SERVER_ERROR)
+        .send({ message: "An error has occurred on the server" });
     });
 };
 
