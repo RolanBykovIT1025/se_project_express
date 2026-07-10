@@ -28,10 +28,10 @@ app.use(errorHandler);
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db")
   .then(() => {
-    console.log("Connected to DB");
+    console.log("Connected to DB"); // eslint-disable-line no-console
   })
-  .catch(console.error);
+  .catch(console.error); // eslint-disable-line no-console
 
 app.listen(PORT, () => {
-  console.log(`Listening on port ${PORT}`);
+  console.log(`Listening on port ${PORT}`); // eslint-disable-line no-console
 });
